@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCrawlStats } from "@/services/crawlerService";
+import { POLLING_CONFIG } from "@/config/polling";
 
 type CrawlStatsData = {
   total: number;
@@ -52,7 +53,7 @@ export default function CrawlStats() {
     }
 
     loadStats(false);
-    const interval = setInterval(() => loadStats(false), 3000);
+  const interval = setInterval(() => loadStats(false), POLLING_CONFIG.STATS_INTERVAL);
     return () => clearInterval(interval);
   }, [autoRefresh]);
 

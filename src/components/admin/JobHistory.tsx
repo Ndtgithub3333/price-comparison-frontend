@@ -23,6 +23,7 @@ import {
   cancelCrawlJob,
   type CrawlJob,
 } from "@/services/crawlerService";
+import { POLLING_CONFIG } from "@/config/polling";
 
 interface JobHistoryProps {
   refreshTrigger?: number;
@@ -59,7 +60,7 @@ export default function JobHistory({ refreshTrigger }: JobHistoryProps) {
       if (autoRefresh) {
         loadJobs(true); // Silent refresh, không show loading
       }
-    }, 3000);
+  }, POLLING_CONFIG.JOBS_INTERVAL);
 
     return () => clearInterval(interval);
   }, [page, refreshTrigger, autoRefresh]);
@@ -91,7 +92,7 @@ export default function JobHistory({ refreshTrigger }: JobHistoryProps) {
           } catch {
             clearInterval(logsInterval);
           }
-        }, 2000); // Refresh logs mỗi 2 giây
+  }, POLLING_CONFIG.LOGS_INTERVAL); // Refresh logs từ config
 
         // Cleanup khi đóng dialog
         return () => clearInterval(logsInterval);
