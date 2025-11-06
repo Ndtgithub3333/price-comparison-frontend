@@ -53,7 +53,10 @@ export default function CrawlStats() {
     }
 
     loadStats(false);
-  const interval = setInterval(() => loadStats(false), POLLING_CONFIG.STATS_INTERVAL);
+    const interval = setInterval(
+      () => loadStats(false),
+      POLLING_CONFIG.STATS_INTERVAL,
+    );
     return () => clearInterval(interval);
   }, [autoRefresh]);
 

@@ -60,7 +60,7 @@ export default function JobHistory({ refreshTrigger }: JobHistoryProps) {
       if (autoRefresh) {
         loadJobs(true); // Silent refresh, không show loading
       }
-  }, POLLING_CONFIG.JOBS_INTERVAL);
+    }, POLLING_CONFIG.JOBS_INTERVAL);
 
     return () => clearInterval(interval);
   }, [page, refreshTrigger, autoRefresh]);
@@ -92,7 +92,7 @@ export default function JobHistory({ refreshTrigger }: JobHistoryProps) {
           } catch {
             clearInterval(logsInterval);
           }
-  }, POLLING_CONFIG.LOGS_INTERVAL); // Refresh logs từ config
+        }, POLLING_CONFIG.LOGS_INTERVAL); // Refresh logs từ config
 
         // Cleanup khi đóng dialog
         return () => clearInterval(logsInterval);

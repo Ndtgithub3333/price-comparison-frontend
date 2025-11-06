@@ -12,5 +12,4 @@ export const POLLING_CONFIG = {
 
   // Job logs (when viewing logs during crawl)
   LOGS_INTERVAL: 10000, // 10 seconds
-
 };
