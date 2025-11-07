@@ -4,7 +4,6 @@ import { useUserStore } from "@/lib/userStore";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
 import { logout } from "@/services/userService";
-import { ChartNoAxesCombined } from "lucide-react";
 
 export default function AdminLayout() {
   const user = useUserStore((state) => state.user);
