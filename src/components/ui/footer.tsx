@@ -68,12 +68,12 @@ const defaultSocialLinks = [
   },
   {
     icon: <Twitter className="size-5 hover:text-[#1DA1F2]" />,
-    href: "https://www.facebook.com/thangsalt/",
+    href: "https://www.linkedin.com/in/thangsalt/",
     label: "Twitter",
   },
   {
     icon: <Linkedin className="size-5 hover:text-[#0a66c2]" />,
-    href: "https://www.facebook.com/thangsalt/",
+    href: "https://www.linkedin.com/in/thangsalt/",
     label: "LinkedIn",
   },
 ];
