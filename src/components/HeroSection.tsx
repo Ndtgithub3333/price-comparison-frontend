@@ -1,13 +1,86 @@
-
+import React, { useEffect, useState } from "react";
 import CategoryIconsRow from "./CategoryIconsRow";
 import { Search, ArrowRight } from "lucide-react";
+import { getAllProducts, getTopProducts } from "@/services/productService";
+import type { Product } from "@/services/productService";
+import { sponsorMocks, productMocks } from "@/mocks/mockData";
+import HorizontalCarousel from "./HorizontalCarousel";
+import ProductCard from "./ProductCard";
 
 // Hero kiểu PriceRunner: card bo góc, tiêu đề lớn, mô tả, search bar và hình ảnh bên phải
 export default function HeroSection() {
+  const [topProducts, setTopProducts] = useState<Product[] | null>(null);
+  const [adventProducts, setAdventProducts] = useState<Product[] | null>(null);
+  const [phoneSaleProducts, setPhoneSaleProducts] = useState<Product[] | null>(
+    null,
+  );
+  const [sponsors, setSponsors] = useState<
+    {
+      id: string;
+      name: string;
+      imageUrl: string;
+      logoUrl?: string;
+      targetUrl?: string;
+    }[]
+  >(sponsorMocks);
+
+  useEffect(() => {
+    let mounted = true;
+
+    (async () => {
+      try {
+        // 1) Top products (e.g., weekly)
+        const topRes = await getTopProducts("week");
+        // productService.getTopProducts returns res.data shape; try to normalize
+        const topList: Product[] = Array.isArray(topRes)
+          ? topRes
+          : (topRes.data ?? topRes.products ?? []);
+        if (mounted)
+          setTopProducts(
+            (topList.length ? topList : productMocks).slice(0, 12),
+          );
+      } catch (e) {
+        // ignore - keep null to fall back to placeholders
+        console.warn("Failed to load top products", e);
+        if (mounted) setTopProducts(productMocks.slice(0, 12));
+      }
+
+      try {
+        // 2) Advent calendars -- use category 'advent' (best-effort)
+        const adventRes = await getAllProducts({ category: "laptop", page: 1 });
+        const advList: Product[] = adventRes?.products ?? [];
+        if (mounted) setAdventProducts(advList.slice(0, 10));
+      } catch (e) {
+        console.warn("Failed to load advent products", e);
+        if (mounted) setAdventProducts([]);
+      }
+
+      try {
+        // 3) Phones on sale - fetch phones and filter discount > 0 if backend doesn't provide a direct filter
+        const phonesRes = await getAllProducts({ category: "phone", page: 1 });
+        const phonesList: Product[] = phonesRes?.products ?? [];
+        const onSale = phonesList.filter((p) => (p.discount ?? 0) > 0);
+        if (mounted)
+          setPhoneSaleProducts(
+            (onSale.length ? onSale : phonesList).slice(0, 12),
+          );
+      } catch (e) {
+        console.warn("Failed to load phone products", e);
+        if (mounted) setPhoneSaleProducts(productMocks.slice(0, 12));
+      }
+
+      // Use mock sponsors for development (no network fetch)
+      if (mounted) setSponsors(sponsorMocks);
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
   return (
-    <section className="mx-auto max-w-7xl  py-12">
+    <section className="mx-auto max-w-7xl py-12">
       <div
-        className="relative rounded-2xl overflow-hidden text-white shadow-lg"
+        className="relative overflow-hidden rounded-2xl text-white shadow-lg"
         style={{
           // show original image colors (no dark overlay)
           backgroundImage: "url('/Web_hero_desktop.avif')",
@@ -15,20 +88,21 @@ export default function HeroSection() {
           backgroundPosition: "right center",
         }}
       >
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center p-8 md:p-12">
+        <div className="grid grid-cols-1 items-center gap-6 p-8 md:grid-cols-12 md:p-12">
           {/* Left content */}
-          <div className="md:col-span-7 z-10">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight">
+          <div className="z-10 md:col-span-7">
+            <h1 className="text-3xl leading-tight font-extrabold sm:text-4xl md:text-5xl lg:text-6xl">
               Search, compare, save
             </h1>
-            <p className="mt-4 text-base sm:text-lg md:text-xl text-slate-200 max-w-2xl">
-              Find your next deal today — compare prices on millions of products from thousands of shops
+            <p className="mt-4 max-w-2xl text-base text-slate-200 sm:text-lg md:text-xl">
+              Find your next deal today — compare prices on millions of products
+              from thousands of shops
             </p>
 
             {/* Search bar */}
             <div className="mt-8 max-w-xl">
               <div className="flex items-center rounded-full bg-white p-1 shadow-sm">
-                <div className="pl-3 pr-2 text-slate-700">
+                <div className="pr-2 pl-3 text-slate-700">
                   <Search className="h-5 w-5" />
                 </div>
                 <input
@@ -36,29 +110,133 @@ export default function HeroSection() {
                   placeholder="What are you looking for today?"
                   className="flex-1 rounded-full border-0 bg-transparent px-2 py-3 text-slate-800 placeholder:text-slate-400 focus:outline-none"
                 />
-                <button className="ml-2 mr-1 rounded-full bg-slate-900 p-3 h-10 w-10 flex items-center justify-center text-white hover:bg-slate-800 cursor-pointer">
+                <button className="mr-1 ml-2 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-slate-900 p-3 text-white hover:bg-slate-800">
                   <ArrowRight className="h-4 w-4" />
                 </button>
               </div>
             </div>
-
-           
           </div>
 
           {/* Right spacer (image is background) */}
-          <div className="md:col-span-5 flex justify-center md:justify-end z-10" aria-hidden>
+          <div
+            className="z-10 flex justify-center md:col-span-5 md:justify-end"
+            aria-hidden
+          >
             {/* decorative empty div to keep layout — actual image is background */}
-            <div className="w-[320px] h-[320px] rounded-xl" />
+            <div className="h-[320px] w-[320px] rounded-xl" />
           </div>
         </div>
 
         {/* subtle overlay to darken edges (decorative) */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent to-black/10"></div>
-        
       </div>
-       {/* Category icons row (simple) */}
-            <CategoryIconsRow />
+      {/* Category icons row (simple) */}
+      <CategoryIconsRow />
+      {/* ----------------------------- */}
+      {/* Below-category content: banners + carousels */}
+      {/* ----------------------------- */}
+      <div className="mt-8 space-y-10">
+        {/* Sponsored banners row */}
+        <div>
+          <h3 className="mb-3 text-lg font-semibold">Sponsored</h3>
+          <HorizontalCarousel items={sponsors.length}>
+            {(i: number) => {
+              const s = sponsors[i];
+              return (
+                <div
+                  key={s?.id ?? i}
+                  className="relative mr-4 h-[258px] w-[360px] flex-shrink-0 overflow-visible rounded-lg border border-slate-100 bg-white shadow-sm"
+                >
+                  {/* banner area */}
+                  <div className="relative h-[170px] w-full overflow-hidden rounded-t-lg bg-slate-200">
+                    {s?.targetUrl ? (
+                      <a
+                        href={s.targetUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block h-full w-full"
+                      >
+                        <img
+                          loading="lazy"
+                          decoding="async"
+                          alt={s?.name ?? `sponsor-${i}`}
+                          src={s?.imageUrl ?? `iphone.png`}
+                          className="h-full w-full object-contain transition-transform duration-200 ease-out hover:scale-105"
+                          onError={(e) => (e.currentTarget.src = "iphone.png")}
+                        />
+                      </a>
+                    ) : (
+                      <img
+                        loading="lazy"
+                        decoding="async"
+                        alt={s?.name ?? `sponsor-${i}`}
+                        src={s?.imageUrl ?? `iphone.png`}
+                        className="h-full w-full object-cover transition-transform duration-200 ease-out hover:scale-105"
+                        onError={(e) => (e.currentTarget.src = "iphone.png")}
+                      />
+                    )}
+                  </div>
+
+                  {/* logo + name (inside same parent, below the image) */}
+                  <div className="justify-space flex items-center gap-2 px-3 py-4 text-center">
+                    <div className="h-12 w-12 flex-shrink-0">
+                      <img
+                        loading="lazy"
+                        decoding="async"
+                        src={
+                          s?.logoUrl ??
+                          s?.imageUrl ??
+                          "/assets/sponsor-logo-placeholder.png"
+                        }
+                        alt={`${s?.name ?? "logo"}`}
+                        className="h-12 w-12 rounded-full border object-contain"
+                        onError={(e) =>
+                          (e.currentTarget.src =
+                            "/assets/sponsor-logo-placeholder.png")
+                        }
+                      />
+                    </div>
+                    <div className="text-base font-semibold text-slate-800">
+                      {s?.name ?? `Sponsor ${i}`}
+                    </div>
+                  </div>
+                </div>
+              );
+            }}
+          </HorizontalCarousel>
+        </div>
+
+        {/* Generic horizontal product carousel sections */}
+        {[
+          { title: "Popular products right now", items: 10 },
+          { title: "Popular advent calendars", items: 8 },
+          { title: "Popular mobile phones on sale", items: 12 },
+        ].map((section) => (
+          <section key={section.title}>
+            <div className="mb-3 flex items-baseline justify-between">
+              <h3 className="text-lg font-semibold">{section.title}</h3>
+              <a className="text-sm text-slate-500 hover:no-underline underline" href="#">
+                See all
+              </a>
+            </div>
+
+            <HorizontalCarousel items={section.items}>
+              {(idx: number) => {
+                const map = {
+                  "Popular products right now": topProducts,
+                  "Popular advent calendars": adventProducts,
+                  "Popular mobile phones on sale": phoneSaleProducts,
+                } as Record<string, Product[] | null>;
+
+                const data = map[section.title];
+                const product = data && data[idx] ? data[idx] : null;
+
+                return <ProductCard key={idx} product={product} index={idx} />;
+              }}
+            </HorizontalCarousel>
+          </section>
+        ))}
+      </div>
     </section>
-    
   );
 }
