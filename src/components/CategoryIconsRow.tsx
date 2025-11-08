@@ -5,49 +5,33 @@ import {
   Smartphone,
   Camera,
   Cpu,
-  ChevronLeft,
-  ChevronRight,
+  Laptop,
+  Tablet,
+  Headphones,
+  Watch,
 } from "lucide-react";
 import React, { useRef, useState, useEffect } from "react";
+import ScrollControls from "./ScrollControls";
 
 const CategoryIconsRow = () => {
   const categories: [string, React.ReactNode][] = [
     ["Home", <Home key="home" className="h-5 w-5" />],
-    ["Computers", <Monitor key="monitor" className="h-5 w-5" />],
+    ["Phones", <Smartphone key="phone" className="h-5 w-5" />],
+    ["Laptops", <Laptop key="laptop" className="h-5 w-5" />],
+    ["Tablets", <Tablet key="tablet" className="h-5 w-5" />],
+    ["Headphones", <Headphones key="headphones" className="h-5 w-5" />],
+    ["Watches", <Watch key="watch" className="h-5 w-5" />],
+    ["Accessories", <Cpu key="cpu" className="h-5 w-5" />],
+    ["Photography", <Camera key="camera" className="h-5 w-5" />],
     ["Gaming", <Gamepad key="gamepad" className="h-5 w-5" />],
-    ["Phones", <Smartphone key="phone" className="h-5 w-5" />],
-    ["Components", <Cpu key="cpu" className="h-5 w-5" />],
-    ["Photography", <Camera key="camera" className="h-5 w-5" />],
-    ["Phones", <Smartphone key="phone" className="h-5 w-5" />],
-    ["Components", <Cpu key="cpu" className="h-5 w-5" />],
-    ["Photography", <Camera key="camera" className="h-5 w-5" />],
-    ["Phones", <Smartphone key="phone" className="h-5 w-5" />],
-    ["Components", <Cpu key="cpu" className="h-5 w-5" />],
-    ["Photography", <Camera key="camera" className="h-5 w-5" />],
+    ["Monitors", <Monitor key="monitor" className="h-5 w-5" />],
   ];
 
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
+  // mobile scroll container (no nav buttons)
   const desktopRef = useRef<HTMLDivElement | null>(null);
   const [canScrollLeftDesktop, setCanScrollLeftDesktop] = useState(false);
   const [canScrollRightDesktop, setCanScrollRightDesktop] = useState(false);
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const check = () => {
-      setCanScrollLeft(el.scrollLeft > 0);
-      setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
-    };
-    check();
-    el.addEventListener("scroll", check, { passive: true });
-    window.addEventListener("resize", check);
-    return () => {
-      el.removeEventListener("scroll", check as any);
-      window.removeEventListener("resize", check);
-    };
-  }, []);
+  const [hoverDesktop, setHoverDesktop] = useState(false);
 
   useEffect(() => {
     const el = desktopRef.current;
@@ -62,28 +46,33 @@ const CategoryIconsRow = () => {
     el.addEventListener("scroll", check, { passive: true });
     window.addEventListener("resize", check);
     return () => {
-      el.removeEventListener("scroll", check as any);
+      el.removeEventListener("scroll", check);
       window.removeEventListener("resize", check);
     };
   }, []);
 
-  function scrollByDistance(delta: number) {
-    const el = scrollRef.current;
+  // mobile: swipe only, no nav handlers
+
+  // reusable scroll helpers for any ref
+  function scrollRefBy(
+    ref: React.RefObject<HTMLDivElement | null>,
+    delta: number,
+  ) {
+    const el = ref.current;
     if (!el) return;
     el.scrollBy({ left: delta, behavior: "smooth" });
   }
 
-  const handlePrev = () => {
-    const el = scrollRef.current;
-    if (!el) return;
-    scrollByDistance(-Math.max(el.clientWidth * 0.7, 160));
-  };
-
-  const handleNext = () => {
-    const el = scrollRef.current;
-    if (!el) return;
-    scrollByDistance(Math.max(el.clientWidth * 0.7, 160));
-  };
+  const handlePrevDesktop = () =>
+    scrollRefBy(
+      desktopRef,
+      -Math.max((desktopRef.current?.clientWidth ?? 0) * 0.7, 240),
+    );
+  const handleNextDesktop = () =>
+    scrollRefBy(
+      desktopRef,
+      Math.max((desktopRef.current?.clientWidth ?? 0) * 0.7, 240),
+    );
 
   return (
     <div className="relative z-20 mt-6">
@@ -92,8 +81,7 @@ const CategoryIconsRow = () => {
         <div className="lg:hidden">
           <div className="group relative rounded-xl bg-white p-3 shadow-sm">
             <div
-              className="flex gap-3 overflow-x-auto px-1 py-2"
-              ref={scrollRef}
+              className="hide-scrollbar flex gap-3 overflow-x-auto px-1 py-2"
               role="list"
             >
               {categories.map(([name, icon], idx) => (
@@ -108,30 +96,19 @@ const CategoryIconsRow = () => {
               ))}
             </div>
 
-            {/* left/right buttons */}
-            <button
-              aria-label="Previous categories"
-              onClick={handlePrev}
-              className={`absolute top-1/2 left-2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 opacity-0 shadow transition-opacity duration-200 group-hover:opacity-100 hover:bg-white ${canScrollLeft ? "" : "opacity-40"}`}
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-700" />
-            </button>
-
-            <button
-              aria-label="Next categories"
-              onClick={handleNext}
-              className={`absolute top-1/2 right-2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 opacity-0 shadow transition-opacity duration-200 group-hover:opacity-100 hover:bg-white ${canScrollRight ? "" : "opacity-40"}`}
-            >
-              <ChevronRight className="h-5 w-5 text-slate-700" />
-            </button>
+            {/* mobile: no nav buttons (swipe) */}
           </div>
         </div>
 
         {/* Desktop: scrollable centered container with nav */}
         <div className="hidden lg:block">
-          <div className="group relative rounded-xl bg-white p-3 shadow-sm">
+          <div
+            className="group relative rounded-xl bg-white p-3 shadow-sm"
+            onMouseEnter={() => setHoverDesktop(true)}
+            onMouseLeave={() => setHoverDesktop(false)}
+          >
             <div
-              className="flex items-center gap-4 overflow-x-auto px-2"
+              className="hide-scrollbar flex items-center gap-4 overflow-x-auto px-2"
               ref={desktopRef}
             >
               {categories.map(([name, icon], idx) => (
@@ -145,35 +122,16 @@ const CategoryIconsRow = () => {
               ))}
             </div>
 
-            <button
-              aria-label="Previous categories"
-              onClick={() => {
-                const el = desktopRef.current;
-                if (!el) return;
-                el.scrollBy({
-                  left: -Math.max(el.clientWidth * 0.7, 240),
-                  behavior: "smooth",
-                });
-              }}
-              className={`absolute top-1/2 left-3 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 opacity-0 shadow transition-opacity duration-200 hover:bg-white lg:flex lg:opacity-0 lg:group-hover:opacity-100 ${canScrollLeftDesktop ? "" : "opacity-40"}`}
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-700" />
-            </button>
-
-            <button
-              aria-label="Next categories"
-              onClick={() => {
-                const el = desktopRef.current;
-                if (!el) return;
-                el.scrollBy({
-                  left: Math.max(el.clientWidth * 0.7, 240),
-                  behavior: "smooth",
-                });
-              }}
-              className={`absolute top-1/2 right-3 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 opacity-0 shadow transition-opacity duration-200 hover:bg-white lg:flex lg:opacity-0 lg:group-hover:opacity-100 ${canScrollRightDesktop ? "" : "opacity-40"}`}
-            >
-              <ChevronRight className="h-5 w-5 text-slate-700" />
-            </button>
+            <ScrollControls
+              onPrev={handlePrevDesktop}
+              onNext={handleNextDesktop}
+              leftClass={`absolute top-1/2 left-3 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 opacity-0 shadow transition-opacity duration-200 hover:bg-white lg:flex lg:opacity-0 lg:group-hover:opacity-100 ${canScrollLeftDesktop ? "" : "opacity-40"}`}
+              rightClass={`absolute top-1/2 right-3 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 opacity-0 shadow transition-opacity duration-200 hover:bg-white lg:flex lg:opacity-0 lg:group-hover:opacity-100 ${canScrollRightDesktop ? "" : "opacity-40"}`}
+              leftDisabled={!canScrollLeftDesktop}
+              rightDisabled={!canScrollRightDesktop}
+              leftVisible={hoverDesktop}
+              rightVisible={hoverDesktop}
+            />
           </div>
         </div>
       </div>

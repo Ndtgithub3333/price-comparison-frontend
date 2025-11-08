@@ -118,3 +118,27 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Floating heart particle animation for product like effect */
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) scale(0.9) rotate(0deg);
+    opacity: 1;
+  }
+  60% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-64px) scale(1.2) rotate(12deg);
+    opacity: 0;
+  }
+}
+
+@layer utilities {
+  /* Utility to apply the floatUp animation as a Tailwind-like class */
+  .animate-floatUp {
+    animation-name: floatUp;
+    animation-timing-function: ease-out;
+    animation-fill-mode: forwards;
+  }
+}
