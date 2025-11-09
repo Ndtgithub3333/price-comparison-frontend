@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { Product as ProductType } from "@/services/productService";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -20,6 +20,137 @@ type Product = ProductType & {
   promotion?: string;
   soldCount?: number;
   rating?: number;
+  specifications?: Record<string, unknown>;
+};
+
+const SPEC_KEY_TRANSLATIONS: Record<string, string> = {
+  battery: "Pin",
+  bluetooth: "Bluetooth",
+  camera_primary: "Camera sau",
+  camera_secondary: "Camera trước",
+  camera_video: "Quay video",
+  best_discount_price: "Giá ưu đãi tốt nhất",
+  warranty: "Bảo hành",
+  warranty_policy: "Chính sách bảo hành",
+  os: "Hệ điều hành",
+  chipset: "Chipset",
+  cpu: "CPU",
+  gpu: "GPU",
+  ram: "RAM",
+  rom: "Bộ nhớ trong",
+  storage: "Dung lượng",
+  screen: "Màn hình",
+  display: "Màn hình",
+  display_size: "Kích thước màn hình",
+  display_technology: "Công nghệ màn hình",
+  material: "Chất liệu",
+  dimensions: "Kích thước",
+  weight: "Trọng lượng",
+  sim: "SIM",
+  sim_type: "Loại SIM",
+  wifi: "Wi-Fi",
+  nfc: "NFC",
+  gps: "GPS",
+  usb: "Cổng kết nối",
+  speaker: "Loa",
+  audio: "Âm thanh",
+  battery_capacity: "Dung lượng pin",
+  charging: "Sạc",
+  fast_charging: "Sạc nhanh",
+  wireless_charging: "Sạc không dây",
+  water_resistant: "Chống nước",
+};
+
+const rawSpecKeysToExclude = [
+  "short_description",
+  "description",
+  "image",
+  "small_image",
+  "thumbnail",
+  "ads_base_image",
+  "image_label",
+  "url_key",
+  "url_path",
+  "meta_title",
+  "meta_keyword",
+  "meta_description",
+  "spec_tag",
+  "change_layout_preorder",
+  "anh_chong_nuoc",
+  "anh_dieu_khien_camera",
+  "anh_intelligence",
+  "anh_sac_khong_day",
+  "anh_thu_phong_quang_hoc",
+];
+
+const SPEC_EXCLUDED_KEYS = new Set(rawSpecKeysToExclude);
+
+const decodeEntities = (value: string): string =>
+  value
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&bull;/gi, "•")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'");
+
+const normalizeSpecValue = (value: unknown): string | null => {
+  if (value === null || value === undefined) return null;
+  if (Array.isArray(value)) {
+    const joined = value
+      .map((item) => normalizeSpecValue(item))
+      .filter((item): item is string => Boolean(item));
+    return joined.length ? joined.join(", ") : null;
+  }
+  if (typeof value === "object") {
+    const joined = Object.values(value as Record<string, unknown>)
+      .map((item) => normalizeSpecValue(item))
+      .filter((item): item is string => Boolean(item));
+    return joined.length ? joined.join(", ") : null;
+  }
+  let text = String(value);
+  if (!text.trim()) return null;
+
+  text = decodeEntities(text);
+  text = text
+    .replace(/<br\s*\/?>(\s|&nbsp;)*/gi, "\n")
+    .replace(/\r/g, "")
+    .replace(/\u00a0/g, " ");
+
+  const lines = text
+    .split(/\n+/)
+    .map((line) => line.replace(/<[^>]+>/g, " ").trim())
+    .filter(Boolean);
+
+  if (!lines.length) return null;
+
+  const merged = lines.join("\n");
+
+  if (/\.(png|jpe?g|webp|gif)$/i.test(merged)) return null;
+  if (/^https?:\/\//i.test(merged)) return null;
+  if (/^true$/i.test(merged) || /^false$/i.test(merged)) return null;
+
+  return merged;
+};
+
+const normalizeKey = (key: string): string =>
+  key
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "_")
+    .replace(/[^a-z0-9_]/g, "");
+
+const formatSpecKey = (key: string): string => {
+  const normalized = normalizeKey(key);
+  if (SPEC_KEY_TRANSLATIONS[normalized]) {
+    return SPEC_KEY_TRANSLATIONS[normalized];
+  }
+  return key
+    .replace(/_/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/(^|\s)\w/g, (match) => match.toUpperCase());
 };
 
 export default function ProductListPage() {
@@ -65,6 +196,43 @@ export default function ProductListPage() {
       toast.error("Không mở được chi tiết sản phẩm");
     }
   };
+
+  const specEntries = useMemo(() => {
+    if (!modalProduct || typeof modalProduct.specifications !== "object") {
+      return [] as Array<{ key: string; value: string }>;
+    }
+
+    const entries: Array<{ key: string; value: string }> = [];
+    const seenKeys = new Set<string>();
+    for (const [rawKey, rawValue] of Object.entries(
+      modalProduct.specifications as Record<string, unknown>,
+    )) {
+      if (!rawKey) {
+        continue;
+      }
+      const normalizedKey = normalizeKey(rawKey);
+      if (SPEC_EXCLUDED_KEYS.has(normalizedKey)) {
+        continue;
+      }
+      if (/^anh\b/.test(normalizedKey)) {
+        continue;
+      }
+      const value = normalizeSpecValue(rawValue);
+      if (!value) {
+        continue;
+      }
+      const key = formatSpecKey(rawKey);
+      if (seenKeys.has(key)) {
+        continue;
+      }
+      seenKeys.add(key);
+      entries.push({ key, value });
+      if (entries.length >= 12) {
+        break;
+      }
+    }
+    return entries;
+  }, [modalProduct]);
 
   return (
     <div className="mx-auto max-w-7xl py-8">
@@ -236,9 +404,28 @@ export default function ProductListPage() {
                         )}
                       </div>
                     </div>
-                    <p className="mt-3 text-sm text-gray-700">
-                      {modalProduct.description ?? "Không có mô tả"}
-                    </p>
+                    <div className="mt-3 text-sm text-gray-700">
+                      <p>{modalProduct.description ?? "Không có mô tả"}</p>
+                      {specEntries.length > 0 && (
+                        <div className="mt-4">
+                          <h4 className="text-sm font-semibold text-gray-800">
+                            Thông số nổi bật
+                          </h4>
+                          <dl className="mt-2 grid grid-cols-1 gap-2 text-sm md:grid-cols-2">
+                            {specEntries.map(({ key, value }) => (
+                              <div key={key} className="flex gap-2">
+                                <dt className="font-medium text-gray-600 shrink-0">
+                                  {key}:
+                                </dt>
+                                <dd className="text-gray-800 whitespace-pre-line">
+                                  {value}
+                                </dd>
+                              </div>
+                            ))}
+                          </dl>
+                        </div>
+                      )}
+                    </div>
                     <div className="mt-4 flex gap-2">
                       <Button
                         onClick={async () => {
