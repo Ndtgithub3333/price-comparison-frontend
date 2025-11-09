@@ -3,7 +3,7 @@ import api from "./api";
 export interface CrawlJob {
   _id: string;
   jobId: string;
-  source: "dienmayxanh" | "thegioididong";
+  source: "dienmayxanh" | "thegioididong" | "cellphones";
   category: "phone" | "laptop";
   status: "pending" | "running" | "completed" | "failed" | "cancelled";
   startedAt?: string;
@@ -64,6 +64,18 @@ export interface JobLogsResponse {
       message: string;
     }>;
   };
+}
+
+export interface RunCrawlerResponse {
+  success: boolean;
+  message: string;
+  jobId?: string;
+  data?: {
+    totalProducts: number;
+    newProducts: number;
+    updatedProducts: number;
+  };
+  error?: string;
 }
 
 /**
@@ -135,14 +147,15 @@ export const getCrawlStats = async (): Promise<CrawlStatsResponse> => {
  * Chạy crawler (existing)
  */
 export const runCrawler = async (
-  type: "dmx" | "tgdd" | "tgdd-laptop",
-): Promise<any> => {
+  type: "dmx" | "tgdd" | "tgdd-laptop" | "cellphones",
+): Promise<RunCrawlerResponse> => {
   const endpoints = {
     dmx: "/crawler/run",
     tgdd: "/crawler/run-tgdd",
     "tgdd-laptop": "/crawler/run-tgdd-laptop",
+    cellphones: "/crawler/run-cellphones",
   };
 
-  const response = await api.post(endpoints[type]);
+  const response = await api.post<RunCrawlerResponse>(endpoints[type]);
   return response.data;
 };

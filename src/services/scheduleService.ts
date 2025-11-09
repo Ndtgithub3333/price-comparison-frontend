@@ -4,7 +4,7 @@ export interface CrawlSchedule {
   _id: string;
   scheduleId: string;
   name: string;
-  source: "dienmayxanh" | "thegioididong";
+  source: "dienmayxanh" | "thegioididong" | "cellphones";
   category: "phone" | "laptop";
   cronExpression: string;
   timezone?: string;
@@ -24,7 +24,7 @@ export interface CrawlSchedule {
 
 export interface CreateScheduleData {
   name: string;
-  source: "dienmayxanh" | "thegioididong";
+  source: "dienmayxanh" | "thegioididong" | "cellphones";
   category: "phone" | "laptop";
   cronExpression: string;
   timezone?: string;

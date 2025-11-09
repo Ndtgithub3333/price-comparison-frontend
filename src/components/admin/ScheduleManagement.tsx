@@ -38,6 +38,15 @@ import {
   type CreateScheduleData,
 } from "@/services/scheduleService";
 
+const SOURCE_LABELS: Record<
+  "dienmayxanh" | "thegioididong" | "cellphones",
+  string
+> = {
+  dienmayxanh: "Điện Máy Xanh",
+  thegioididong: "Thế Giới Di Động",
+  cellphones: "CellphoneS",
+};
+
 const CRON_PRESETS = [
   { label: "Mỗi 30 phút", value: "*/30 * * * *" },
   { label: "Mỗi giờ", value: "0 * * * *" },
@@ -218,7 +227,9 @@ export default function ScheduleManagement() {
                         {schedule.name}
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline">{schedule.source}</Badge>
+                        <Badge variant="outline">
+                          {SOURCE_LABELS[schedule.source] ?? schedule.source}
+                        </Badge>
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary">{schedule.category}</Badge>
@@ -323,9 +334,9 @@ export default function ScheduleManagement() {
                     <Label htmlFor="source">Source</Label>
                     <Select
                       value={formData.source}
-                      onValueChange={(value: "dienmayxanh" | "thegioididong") =>
-                        setFormData({ ...formData, source: value })
-                      }
+                      onValueChange={(
+                        value: "dienmayxanh" | "thegioididong" | "cellphones",
+                      ) => setFormData({ ...formData, source: value })}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -337,6 +348,7 @@ export default function ScheduleManagement() {
                         <SelectItem value="thegioididong">
                           Thế Giới Di Động
                         </SelectItem>
+                        <SelectItem value="cellphones">CellphoneS</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

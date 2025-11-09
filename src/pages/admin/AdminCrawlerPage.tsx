@@ -13,23 +13,15 @@ import CrawlStats from "@/components/admin/CrawlStats";
 import JobHistory from "@/components/admin/JobHistory";
 import ScheduleManagement from "@/components/admin/ScheduleManagement";
 
-interface CrawlerResult {
-  success: boolean;
-  message: string;
-  jobId?: string;
-  data?: {
-    totalProducts: number;
-    newProducts: number;
-    updatedProducts: number;
-  };
-  error?: string;
-}
+import type { RunCrawlerResponse } from "@/services/crawlerService";
 
 export default function AdminCrawlerPage() {
-  const [dmxResult, setDmxResult] = useState<CrawlerResult | null>(null);
-  const [tgddResult, setTgddResult] = useState<CrawlerResult | null>(null);
+  const [dmxResult, setDmxResult] = useState<RunCrawlerResponse | null>(null);
+  const [tgddResult, setTgddResult] = useState<RunCrawlerResponse | null>(null);
   const [tgddLaptopResult, setTgddLaptopResult] =
-    useState<CrawlerResult | null>(null);
+    useState<RunCrawlerResponse | null>(null);
+  const [cellphonesResult, setCellphonesResult] =
+    useState<RunCrawlerResponse | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleCrawlDMX = async () => {
@@ -54,6 +46,35 @@ export default function AdminCrawlerPage() {
           ?.message || "Crawl thất bại";
       toast.error(`❌ ${errorMsg}`);
       setDmxResult({
+        success: false,
+        message: errorMsg,
+        error: (error as Error).message,
+      });
+    }
+  };
+
+  const handleCrawlCellphones = async () => {
+    setCellphonesResult(null);
+
+    try {
+      toast.info("🚀 Đang crawl CellphoneS...", { duration: 5000 });
+
+      const response = await runCrawler("cellphones");
+
+      setCellphonesResult(response);
+
+      if (response.success) {
+        toast.success(`✅ ${response.message}`, { duration: 5000 });
+        setRefreshTrigger((prev) => prev + 1);
+      } else {
+        toast.error(`❌ ${response.message}`, { duration: 5000 });
+      }
+    } catch (error: unknown) {
+      const errorMsg =
+        (error as { response?: { data?: { message?: string } } }).response?.data
+          ?.message || "Crawl thất bại";
+      toast.error(`❌ ${errorMsg}`);
+      setCellphonesResult({
         success: false,
         message: errorMsg,
         error: (error as Error).message,
@@ -133,7 +154,7 @@ export default function AdminCrawlerPage() {
       {/* Stats Dashboard */}
       <CrawlStats />
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {/* Điện Máy Xanh Crawler */}
         <Card>
           <CardHeader>
@@ -185,6 +206,69 @@ export default function AdminCrawlerPage() {
                 {dmxResult.error && (
                   <div className="mt-2 rounded bg-white p-2 text-xs text-red-600">
                     <strong>Error:</strong> {dmxResult.error}
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* CellphoneS Crawler */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <span className="text-2xl">🔴</span>
+              CellphoneS
+            </CardTitle>
+            <CardDescription>
+              Crawl dữ liệu điện thoại từ cellphones.com.vn
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button
+              onClick={handleCrawlCellphones}
+              className="w-full"
+              size="lg"
+              variant="default"
+            >
+              🚀 Bắt đầu Crawl
+            </Button>
+
+            {cellphonesResult && (
+              <div
+                className={`rounded-lg border p-4 ${cellphonesResult.success ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}`}
+              >
+                <h4 className="mb-2 font-semibold">
+                  {cellphonesResult.success ? "✅ Thành công" : "❌ Thất bại"}
+                </h4>
+                <p className="mb-3 text-sm">{cellphonesResult.message}</p>
+
+                {cellphonesResult.data && (
+                  <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div className="rounded bg-white p-2 text-center">
+                      <div className="text-xs text-gray-500">Tổng</div>
+                      <div className="text-lg font-bold">
+                        {cellphonesResult.data.totalProducts}
+                      </div>
+                    </div>
+                    <div className="rounded bg-white p-2 text-center">
+                      <div className="text-xs text-gray-500">Mới</div>
+                      <div className="text-lg font-bold text-green-600">
+                        {cellphonesResult.data.newProducts}
+                      </div>
+                    </div>
+                    <div className="rounded bg-white p-2 text-center">
+                      <div className="text-xs text-gray-500">Cập nhật</div>
+                      <div className="text-lg font-bold text-blue-600">
+                        {cellphonesResult.data.updatedProducts}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {cellphonesResult.error && (
+                  <div className="mt-2 rounded bg-white p-2 text-xs text-red-600">
+                    <strong>Error:</strong> {cellphonesResult.error}
                   </div>
                 )}
               </div>
@@ -336,6 +420,10 @@ export default function AdminCrawlerPage() {
           <p>
             • <strong>TGDD Laptop:</strong> Sử dụng Scrapy (Python), crawl
             laptop (~417 sản phẩm)
+          </p>
+          <p>
+            • <strong>CellphoneS:</strong> Sử dụng GraphQL API (Node.js fetch),
+            crawl điện thoại (~1200 sản phẩm)
           </p>
           <p>• Dữ liệu được lưu trực tiếp vào MongoDB</p>
           <p>• Sản phẩm trùng lặp sẽ được tự động cập nhật</p>
