@@ -414,10 +414,10 @@ export default function ProductListPage() {
                           <dl className="mt-2 grid grid-cols-1 gap-2 text-sm md:grid-cols-2">
                             {specEntries.map(({ key, value }) => (
                               <div key={key} className="flex gap-2">
-                                <dt className="font-medium text-gray-600 shrink-0">
+                                <dt className="shrink-0 font-medium text-gray-600">
                                   {key}:
                                 </dt>
-                                <dd className="text-gray-800 whitespace-pre-line">
+                                <dd className="whitespace-pre-line text-gray-800">
                                   {value}
                                 </dd>
                               </div>
