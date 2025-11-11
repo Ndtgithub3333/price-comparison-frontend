@@ -48,11 +48,11 @@ export function useProductFilters() {
   // Debounce search - chỉ cho ô tìm kiếm
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetchProducts();
-    }, 500); // Chờ 700ms sau khi user ngừng gõ
-
+      setPage(1);
+      // fetchProducts sẽ được gọi bởi effect [page]
+    }, 500);
     return () => clearTimeout(timer);
-  }, [search]); // Chỉ debounce cho search
+  }, [search]); // Khi search thay đổi, reset page về 1
 
   // Fetch khi thay đổi page
   useEffect(() => {
