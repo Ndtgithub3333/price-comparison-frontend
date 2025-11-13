@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import CategoryIconsRow from "./CategoryIconsRow";
 import { Search, ArrowRight } from "lucide-react";
-import { getAllProducts, getTopProducts } from "@/services/productService";
+import { getAllProducts } from "@/services/productService";
 import type { Product } from "@/services/productService";
-import { sponsorMocks, productMocks } from "@/mocks/mockData";
+import { sponsorMocks } from "@/mocks/mockData";
 import HorizontalCarousel from "./HorizontalCarousel";
 import ProductCard from "./ProductCard";
 
@@ -29,44 +29,41 @@ export default function HeroSection() {
 
     (async () => {
       try {
-        // 1) Top products (e.g., weekly)
-        const topRes = await getTopProducts("week");
-        // productService.getTopProducts returns res.data shape; try to normalize
-        const topList: Product[] = Array.isArray(topRes)
-          ? topRes
-          : (topRes.data ?? topRes.products ?? []);
-        if (mounted)
-          setTopProducts(
-            (topList.length ? topList : productMocks).slice(0, 12),
-          );
+        // 1) Top products (bán chạy)
+        const topRes = await getAllProducts({ sort: "bestseller", limit: 10 });
+        const topList: Product[] = topRes?.products ?? [];
+        if (mounted) setTopProducts(topList);
       } catch (e) {
-        // ignore - keep null to fall back to placeholders
         console.warn("Failed to load top products", e);
-        if (mounted) setTopProducts(productMocks.slice(0, 12));
+        if (mounted) setTopProducts([]);
       }
 
       try {
-        // 2) Advent calendars -- use category 'advent' (best-effort)
-        const adventRes = await getAllProducts({ category: "laptop", page: 1 });
-        const advList: Product[] = adventRes?.products ?? [];
-        if (mounted) setAdventProducts(advList.slice(0, 10));
+        // 2) Laptops on sale (giảm giá nhiều)
+        const laptopRes = await getAllProducts({
+          category: "laptop",
+          sort: "discount",
+          limit: 10,
+        });
+        const laptopList: Product[] = laptopRes?.products ?? [];
+        if (mounted) setAdventProducts(laptopList);
       } catch (e) {
-        console.warn("Failed to load advent products", e);
+        console.warn("Failed to load laptop products", e);
         if (mounted) setAdventProducts([]);
       }
 
       try {
-        // 3) Phones on sale - fetch phones and filter discount > 0 if backend doesn't provide a direct filter
-        const phonesRes = await getAllProducts({ category: "phone", page: 1 });
+        // 3) Phones on sale (giảm giá nhiều)
+        const phonesRes = await getAllProducts({
+          category: "phone",
+          sort: "discount",
+          limit: 10,
+        });
         const phonesList: Product[] = phonesRes?.products ?? [];
-        const onSale = phonesList.filter((p) => (p.discount ?? 0) > 0);
-        if (mounted)
-          setPhoneSaleProducts(
-            (onSale.length ? onSale : phonesList).slice(0, 12),
-          );
+        if (mounted) setPhoneSaleProducts(phonesList);
       } catch (e) {
         console.warn("Failed to load phone products", e);
-        if (mounted) setPhoneSaleProducts(productMocks.slice(0, 12));
+        if (mounted) setPhoneSaleProducts([]);
       }
 
       // Use mock sponsors for development (no network fetch)
@@ -208,29 +205,25 @@ export default function HeroSection() {
 
         {/* Generic horizontal product carousel sections */}
         {[
-          { title: "Popular products right now", items: 10 },
-          { title: "Popular advent calendars", items: 8 },
-          { title: "Popular mobile phones on sale", items: 12 },
+          { title: "Top products", data: topProducts },
+          { title: "Laptops on sale", data: adventProducts },
+          { title: "Mobile phones on sale", data: phoneSaleProducts },
         ].map((section) => (
           <section key={section.title}>
             <div className="mb-3 flex items-baseline justify-between">
               <h3 className="text-lg font-semibold">{section.title}</h3>
-              <a className="text-sm text-slate-500 hover:no-underline underline" href="#">
+              <a
+                className="text-sm text-slate-500 underline hover:no-underline"
+                href="#"
+              >
                 See all
               </a>
             </div>
 
-            <HorizontalCarousel items={section.items}>
+            <HorizontalCarousel items={section.data?.length || 0}>
               {(idx: number) => {
-                const map = {
-                  "Popular products right now": topProducts,
-                  "Popular advent calendars": adventProducts,
-                  "Popular mobile phones on sale": phoneSaleProducts,
-                } as Record<string, Product[] | null>;
-
-                const data = map[section.title];
+                const data = section.data;
                 const product = data && data[idx] ? data[idx] : null;
-
                 return <ProductCard key={idx} product={product} index={idx} />;
               }}
             </HorizontalCarousel>
