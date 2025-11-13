@@ -50,7 +50,7 @@ export default function ProductCard({
 
             const spawn: Array<{ id: number; left: number; delay: number }> =
               [];
-            const count = 6;
+            const count = 12;
             for (let i = 0; i < count; i++) {
               const id = Date.now() + Math.floor(Math.random() * 10000) + i;
               const left = 8 + Math.random() * 180;
