@@ -98,7 +98,7 @@ export default function ProductCard({
           <div className="line-clamp-2 font-medium">{name}</div>
           <div className="mt-1 flex items-center justify-between">
             <div className="text-sm font-semibold text-slate-900">
-              {price.toLocaleString()} ₫
+              {price.toLocaleString()}₫
             </div>
             {product?.rating ? (
               <div className="flex items-center text-xs text-slate-600">
@@ -113,21 +113,15 @@ export default function ProductCard({
           <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
             <div>
               {product?.soldCount
-                ? `${product.soldCount.toLocaleString()} sold`
+                ? `${product.soldCount.toLocaleString()} đã bán`
                 : ""}
             </div>
             <div
               className={`rounded-full px-2 py-0.5 ${product?.inStock ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"}`}
             >
-              {product?.inStock ? "In stock" : "Out of stock"}
+              {product?.inStock ? "Còn hàng" : "Hết hàng"}
             </div>
           </div>
-
-          {product?.promotion ? (
-            <div className="mt-1 text-xs text-slate-500">
-              {product.promotion}
-            </div>
-          ) : null}
         </div>
       </div>
     </article>
