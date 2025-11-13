@@ -36,6 +36,7 @@ export interface ProductFilters {
   maxPrice?: number;
   inStock?: boolean;
   sort?: string; // 'price_asc', 'price_desc', 'bestseller', 'discount', 'newest', ...
+  limit?: number;
 }
 
 export const getAllProducts = async (filters: ProductFilters = {}) => {
@@ -48,9 +49,11 @@ export const getAllProducts = async (filters: ProductFilters = {}) => {
   if (filters.search) params.append("search", filters.search);
   if (filters.minPrice) params.append("minPrice", filters.minPrice.toString());
   if (filters.maxPrice) params.append("maxPrice", filters.maxPrice.toString());
+
   if (filters.inStock !== undefined)
     params.append("inStock", filters.inStock.toString());
   if (filters.sort) params.append("sort", filters.sort);
+  if (filters.limit) params.append("limit", filters.limit.toString());
 
   const res = await productAPI.get(`/?${params.toString()}`);
   return {
