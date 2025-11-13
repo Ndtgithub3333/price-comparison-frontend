@@ -21,9 +21,10 @@ interface ProductFiltersProps {
   setMinPrice: (value: string) => void;
   maxPrice: string;
   setMaxPrice: (value: string) => void;
+  sort: string;
+  setSort: (value: string) => void;
   onClearFilters: () => void;
   onApplyFilters: () => void;
-  // Không cần setPage nữa vì filter không tự động áp dụng
 }
 
 export function ProductFilters({
@@ -39,16 +40,18 @@ export function ProductFilters({
   setMinPrice,
   maxPrice,
   setMaxPrice,
+  sort,
+  setSort,
   onClearFilters,
   onApplyFilters,
 }: ProductFiltersProps) {
   const hasFilters =
-    search || category || source || inStock || minPrice || maxPrice;
+    search || category || source || inStock || minPrice || maxPrice || sort !== "newest";
 
   return (
     <div className="mb-6 rounded-lg border bg-white p-4">
       <h3 className="mb-4 text-lg font-semibold">Tìm kiếm & Lọc</h3>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7">
         {/* Search */}
         <div className="xl:col-span-2">
           <Input
@@ -60,7 +63,6 @@ export function ProductFilters({
         </div>
         {/* Category Filter */}
         <div>
-          {/* Danh mục */}
           <Select value={category} onValueChange={setCategory}>
             <SelectTrigger>
               <SelectValue placeholder="Danh mục" />
@@ -94,6 +96,21 @@ export function ProductFilters({
             <SelectContent>
               <SelectItem value="true">Còn hàng</SelectItem>
               <SelectItem value="false">Hết hàng</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        {/* Sort Filter */}
+        <div>
+          <Select value={sort} onValueChange={setSort}>
+            <SelectTrigger>
+              <SelectValue placeholder="Sắp xếp" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Mới nhất</SelectItem>
+              <SelectItem value="price_asc">Giá tăng dần</SelectItem>
+              <SelectItem value="price_desc">Giá giảm dần</SelectItem>
+              <SelectItem value="bestseller">Bán chạy</SelectItem>
+              <SelectItem value="discount">Giảm giá nhiều</SelectItem>
             </SelectContent>
           </Select>
         </div>

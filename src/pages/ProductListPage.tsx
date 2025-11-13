@@ -176,6 +176,8 @@ export default function ProductListPage() {
     setMinPrice,
     maxPrice,
     setMaxPrice,
+    sort,
+    setSort,
     handleClearFilters,
     handleApplyFilters,
   } = useProductFilters();
@@ -252,6 +254,8 @@ export default function ProductListPage() {
         setMinPrice={setMinPrice}
         maxPrice={maxPrice}
         setMaxPrice={setMaxPrice}
+        sort={sort}
+        setSort={setSort}
         onClearFilters={handleClearFilters}
         onApplyFilters={handleApplyFilters}
       />

@@ -42,6 +42,8 @@ export default function AdminProductPage() {
     setMinPrice,
     maxPrice,
     setMaxPrice,
+    sort,
+    setSort,
     handleClearFilters,
     handleApplyFilters,
     fetchProducts,
@@ -76,6 +78,8 @@ export default function AdminProductPage() {
         setMinPrice={setMinPrice}
         maxPrice={maxPrice}
         setMaxPrice={setMaxPrice}
+        sort={sort}
+        setSort={setSort}
         onClearFilters={handleClearFilters}
         onApplyFilters={handleApplyFilters}
       />

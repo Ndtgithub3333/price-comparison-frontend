@@ -20,6 +20,7 @@ export function useProductFilters() {
   const [inStock, setInStock] = useState<string>("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
+  const [sort, setSort] = useState<string>("newest");
 
   // Fetch products với filters
   const fetchProducts = useCallback(async () => {
@@ -33,6 +34,7 @@ export function useProductFilters() {
         ...(inStock && { inStock: inStock === "true" }),
         ...(minPrice && { minPrice: parseInt(minPrice) }),
         ...(maxPrice && { maxPrice: parseInt(maxPrice) }),
+        ...(sort && { sort }),
       };
 
       const res = await getAllProducts(filters);
@@ -43,7 +45,7 @@ export function useProductFilters() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, category, source, inStock, minPrice, maxPrice]);
+  }, [page, search, category, source, inStock, minPrice, maxPrice, sort]);
 
   // Debounce search - chỉ cho ô tìm kiếm
   useEffect(() => {
@@ -67,6 +69,7 @@ export function useProductFilters() {
     setInStock("");
     setMinPrice("");
     setMaxPrice("");
+    setSort("newest");
     setPage(1);
   };
 
@@ -97,6 +100,8 @@ export function useProductFilters() {
     setMinPrice,
     maxPrice,
     setMaxPrice,
+    sort,
+    setSort,
 
     // Handlers
     handleClearFilters,
