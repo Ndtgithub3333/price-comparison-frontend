@@ -46,7 +46,13 @@ export function ProductFilters({
   onApplyFilters,
 }: ProductFiltersProps) {
   const hasFilters =
-    search || category || source || inStock || minPrice || maxPrice || sort !== "newest";
+    search ||
+    category ||
+    source ||
+    inStock ||
+    minPrice ||
+    maxPrice ||
+    sort !== "newest";
 
   return (
     <div className="mb-6 rounded-lg border bg-white p-4">
