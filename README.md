@@ -1,4 +1,4 @@
-Em chưa deploy nên e gửi tạm ảnh UI ạ
+Demo IMG - sẽ deploy trong thời gian tới
 Sign IN. Up
 ![alt text](image-4.png)
 
