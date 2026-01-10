@@ -1,5 +1,6 @@
-Demo IMG - sẽ deploy trong thời gian tới
-Sign IN. Up
+Vì chưa săp xếp được thời gian nên em chưa thể deploy được nên
+Dưới đây là vài hình ảnh demo cho trang web ạ
+Sign in/ sign up
 ![alt text](image-4.png)
 
 ![alt text](image-5.png)
